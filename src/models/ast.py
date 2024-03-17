@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional, List
 
 
 @dataclass
@@ -20,3 +21,14 @@ class BinaryOp(Expression):
     left: Expression
     op: str
     right: Expression
+
+@dataclass
+class IfExpr(Expression):
+    condition: Expression
+    then_branch: Expression
+    else_branch: Optional[Expression] = None
+
+@dataclass
+class FunctionCall(Expression):
+    name: str
+    arguments: List[Expression]
