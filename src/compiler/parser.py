@@ -1,5 +1,4 @@
 from src.models import ast
-from src.models.ast import IfExpr, FunctionCall, BlockExpr, VarDecl
 from src.models.types import Token
 
 precedence_levels = [
@@ -41,13 +40,13 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         if peek().type != 'integer':
             raise Exception(f'{peek().loc}: expected an integer literal')
         token = consume()
-        return ast.Literal(int(token.text))
+        return ast.Literal(int(token.text),token.loc)
 
     def parse_identifier() -> ast.Identifier:
         if peek().type != 'identifier':
             raise Exception(f'{peek().loc}: expected an identifier')
         token = consume()
-        return ast.Identifier(name=token.text)
+        return ast.Identifier(name=token.text,location=token.loc)
 
     def parse_term() -> ast.Expression:
         # 处理乘法和除法
@@ -56,7 +55,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             operator_token = consume()
             operator = operator_token.text
             right = parse_factor()
-            left = ast.BinaryOp(left, operator, right)
+            left = ast.BinaryOp(left=left, op=operator, right=right,location=operator_token.loc)
         return left
 
     def parse_binary_expression(level=0) -> ast.Expression:
@@ -71,7 +70,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
                 right_expr = parse_binary_expression(level)  # Use the same level for right associativity
             else:
                 right_expr = parse_binary_expression(level + 1)
-            left_expr = ast.BinaryOp(left_expr, op_token.text, right_expr)
+            left_expr = ast.BinaryOp(left=left_expr,op=op_token.text, right=right_expr,location=op_token.loc)
 
         return left_expr
 
@@ -79,7 +78,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         if peek().text == 'not':
             op_token = consume('not')
             expr = parse_unary_expression()  # 递归以支持链式一元操作符
-            return ast.UnaryOp(op_token.text, expr)
+            return ast.UnaryOp(operator=op_token.text, operand=expr,location=op_token.loc)
         else:
             return parse_factor()
 
@@ -140,7 +139,9 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
     #     return ast.BlockExpr(expressions)
 
     def parse_block() -> ast.BlockExpr:
-        consume('{')
+        # consume('{')
+        opening_brace_token = consume('{')
+        opening_brace_location = opening_brace_token.loc
         expressions = []
         result_expression = None
 
@@ -168,11 +169,12 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
                     raise Exception(f"{peek().loc}: Expected ';' or '}}' but found '{peek().text}'")
 
         consume('}')
-
-        return BlockExpr(expressions, result_expression)
+        # return BlockExpr(expressions, result_expression)
+        return ast.BlockExpr(expressions=expressions, result_expression=result_expression,location=opening_brace_location)
 
     def parse_function_call() -> ast.Expression:
-        name_token = consume()  # 函数名
+        name_token = consume()  # Consume the function name token, capturing the function name
+        function_location = name_token.loc
         consume('(')  # 消费左括号
         arguments = []
         if peek().text != ')':
@@ -184,10 +186,11 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
                 else:
                     break
         consume(')')  # 消费右括号
-        return FunctionCall(name=name_token.text, arguments=arguments)
+        return ast.FunctionCall(name=name_token.text, arguments=arguments,location=function_location)
 
     def parse_if_expr() -> ast.Expression:
-        consume('if')
+        name_token = consume('if')  # Consume the function name token, capturing the function name
+        function_location = name_token.loc
         condition = parse_expression()
         consume('then')
         then_branch = parse_expression()
@@ -195,7 +198,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         if peek().text == 'else':
             consume('else')
             else_branch = parse_expression()
-        return IfExpr(condition, then_branch, else_branch)
+        return ast.IfExpr(condition=condition, then_branch=then_branch, else_branch=else_branch,location=function_location)
 
     def parse_parenthesized() -> ast.Expression:
         consume('(')
@@ -206,11 +209,12 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         return expr
 
     def parse_var_decl() -> ast.VarDecl:
-        consume('var')  # Consume the 'var' keyword
+        name_token = consume('var')  # Consume the function name token, capturing the function name
+        function_location = name_token.loc
         name_token = consume()  # Expect an identifier next
         consume('=')  # Expect an '=' after the identifier
         value = parse_expression()  # Parse the initialization expression
-        return VarDecl(name=name_token.text, value=value)
+        return ast.VarDecl(name=name_token.text, value=value,location=function_location)
 
     def parse_expression_right() -> ast.Expression:
         left = parse_term()
@@ -224,11 +228,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             right = parse_expression()
 
             # 构建并返回一个二元操作的AST节点，左边是`left`，右边是`right`的结果
-            return ast.BinaryOp(
-                left,
-                operator,
-                right
-            )
+            return ast.BinaryOp(left=left,op=operator,right=right,location=operator_token.loc)
         else:
             return left
 
@@ -249,7 +249,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             operator_token = consume()
             operator = operator_token.text
             right = parse_expression()  # 注意这里递归调用 parse_expression()
-            return ast.BinaryOp(left, operator, right)
+            return ast.BinaryOp(left=left, op=operator, right=right,location=operator_token.loc)
         else:
             return left
 
