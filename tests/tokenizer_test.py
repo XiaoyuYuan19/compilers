@@ -25,7 +25,7 @@ class TokenizerTest(unittest.TestCase):
         ]
 
         tokens = tokenize(code)
-        print(tokens)
+
         self.assertEqual(len(tokens), len(expected_tokens), "Number of tokens mismatch")
 
         for token, expected in zip(tokens, expected_tokens):

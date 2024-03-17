@@ -1,5 +1,4 @@
 import unittest
-from _ast import IfExp
 
 from src.compiler.tokenizer import tokenize
 from src.models import ast

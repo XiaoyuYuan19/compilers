@@ -101,43 +101,6 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
 
 
-    # def parse_block() -> ast.BlockExpr:
-    #     consume('{')
-    #     expressions = []
-    #     result_expression = None
-    #
-    #     while not peek().text == '}':
-    #         if peek().text == 'var':
-    #             expr = parse_var_decl()
-    #         else:
-    #             expr = parse_expression()
-    #         if peek().text == ';':
-    #             consume(';')
-    #             expressions.append(expr)
-    #         elif peek().text == '}':
-    #             result_expression = expr
-    #         else:
-    #             raise Exception(f"{peek().loc}: Expected ';' or '}}'")
-    #
-    #     consume('}')
-    #     return BlockExpr(expressions, result_expression)
-
-    # def parse_block() -> ast.BlockExpr:
-    #     consume('{')
-    #     expressions = []
-    #     while not peek().text == '}':
-    #         expr = parse_expression()
-    #         expressions.append(expr)
-    #         print(peek().text,peek().type)
-    #         # Look ahead to decide whether to consume a semicolon
-    #         if peek().text == ';':
-    #             consume(';')  # Optional semicolon
-    #         elif peek().text not in ['}', 'if', 'while', '{', 'var']:  # Adjust based on valid start tokens
-    #             raise Exception(f"{peek().loc}: Expected ';' or '}}'")
-    #
-    #     consume('}')
-    #     return ast.BlockExpr(expressions)
-
     def parse_block() -> ast.BlockExpr:
         # consume('{')
         opening_brace_token = consume('{')
