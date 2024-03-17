@@ -76,15 +76,30 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
     #     else:
     #         raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
 
+    # def parse_binary_expression(level=0) -> ast.Expression:
+    #     if level == len(precedence_levels):
+    #         # 解析最高优先级表达式（包括一元操作符和基本表达式）
+    #         return parse_unary_expression()
+    #
+    #     left_expr = parse_binary_expression(level + 1)
+    #     while peek().text in precedence_levels[level]:
+    #         op_token = consume()
+    #         right_expr = parse_binary_expression(level + 1)
+    #         left_expr = ast.BinaryOp(left_expr, op_token.text, right_expr)
+    #
+    #     return left_expr
     def parse_binary_expression(level=0) -> ast.Expression:
         if level == len(precedence_levels):
-            # 解析最高优先级表达式（包括一元操作符和基本表达式）
             return parse_unary_expression()
 
         left_expr = parse_binary_expression(level + 1)
         while peek().text in precedence_levels[level]:
             op_token = consume()
-            right_expr = parse_binary_expression(level + 1)
+            if op_token.text == '=':
+                # Special handling for right associativity of assignment
+                right_expr = parse_binary_expression(level)  # Use the same level for right associativity
+            else:
+                right_expr = parse_binary_expression(level + 1)
             left_expr = ast.BinaryOp(left_expr, op_token.text, right_expr)
 
         return left_expr
