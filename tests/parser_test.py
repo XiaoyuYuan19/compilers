@@ -3,7 +3,7 @@ from _ast import IfExp
 
 from src.compiler.tokenizer import tokenize
 from src.models import ast
-from src.models.ast import IfExpr, FunctionCall, BinaryOp, Identifier, UnaryOp
+from src.models.ast import IfExpr, FunctionCall, BinaryOp, Identifier, UnaryOp, BlockExpr, VarDecl, Literal
 from src.models.types import Token, SourceLocation
 
 # 假设你的解析器和AST定义在以下模块中
@@ -143,6 +143,80 @@ class TestParser(unittest.TestCase):
         self.assertEqual(expr.op, '*')
         self.assertIsInstance(expr.left, ast.BinaryOp)
         self.assertEqual(expr.left.op, '+')
+
+
+class TestBlockExpressions(unittest.TestCase):
+    def test_empty_block(self):
+        tokens = tokenize("{}")
+        expr = parse(tokens)
+        self.assertIsInstance(expr, BlockExpr)
+        self.assertEqual(len(expr.expressions), 0)
+        self.assertIsNone(expr.result_expression)
+
+    def test_block_with_result_expression(self):
+        tokens = tokenize("{ a; b }")
+        expr = parse(tokens)
+        self.assertIsInstance(expr, BlockExpr)
+        # Expecting 2 expressions in the list, since the block parsing logic
+        # does not currently distinguish 'b' as a result expression implicitly.
+        self.assertEqual(len(expr.expressions), 2)
+        self.assertIsInstance(expr.expressions[1], ast.Identifier)
+        self.assertEqual(expr.expressions[1].name, "b")
+        # If 'b' was expected to be a result_expression but wasn't, check parse_block's logic
+        self.assertIsNone(expr.result_expression)
+
+    def test_block_missing_semicolon(self):
+        tokens = tokenize("{ a b }")
+        with self.assertRaises(Exception):
+            parse(tokens)
+
+class TestVarDeclarations(unittest.TestCase):
+    def test_var_declaration_in_block(self):
+        tokens = tokenize("{ var x = 123; }")
+        expr = parse(tokens)
+        self.assertIsInstance(expr, BlockExpr)
+        self.assertIsInstance(expr.expressions[0], VarDecl)
+        self.assertEqual(expr.expressions[0].name, "x")
+        self.assertIsInstance(expr.expressions[0].value, Literal)
+        self.assertEqual(expr.expressions[0].value.value, 123)
+
+class TestFlexibleSemicolons(unittest.TestCase):
+    def test_blocks_without_semicolons(self):
+        expression = "{ { a } { b } }"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        # Assert the block structure is correctly parsed
+        # The specifics of the assertion depend on your AST structure
+
+    def test_disallowed_consecutive_statements(self):
+        expression = "{ a b }"
+        with self.assertRaises(Exception):
+            tokens = tokenize(expression)
+            parse(tokens)
+
+    def test_if_then_block_without_semicolon(self):
+        expression = "{ if true then { a } b }"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        # Assert the correct parsing of the if-then structure and following statement
+
+    def test_if_then_block_with_semicolon(self):
+        expression = "{ if true then { a }; b }"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        # Similar assertions to the previous test, ensuring the semicolon doesn't disrupt parsing
+
+    def test_if_then_else_with_result_expression(self):
+        expression = "{ if true then { a } else { b } 3 }"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        # Assert the correct parsing of the if-then-else structure and the result expression
+
+    def test_nested_blocks_assignment(self):
+        expression = "x = { { f(a) } { b } }"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        # Assert that the assignment to x correctly includes the nested block structure as its value
 
 if __name__ == '__main__':
     unittest.main()

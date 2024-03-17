@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
+from src.models.types import SourceLocation
+
 
 @dataclass
 class Expression:
@@ -37,3 +39,15 @@ class FunctionCall(Expression):
 class UnaryOp(Expression):
     operator: str
     operand: Expression
+
+@dataclass
+class BlockExpr(Expression):
+    expressions: List[Expression]
+    result_expression: Optional[Expression] = None
+
+@dataclass
+class VarDecl(Expression):
+    name: str
+    value: Expression
+
+

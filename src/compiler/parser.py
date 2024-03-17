@@ -1,5 +1,5 @@
 from src.models import ast
-from src.models.ast import IfExpr, FunctionCall
+from src.models.ast import IfExpr, FunctionCall, BlockExpr, VarDecl
 from src.models.types import Token
 
 precedence_levels = [
@@ -25,7 +25,7 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         else:
             return Token(loc=tokens[-1].loc, type="end", text="")
 
-    def consume(expected: str | list[str] | None = None) -> Token:
+    def consume(expected:  str | list[str] | None = None) -> Token:
         nonlocal pos
         token = peek()
         if isinstance(expected, str) and token.text != expected:
@@ -37,10 +37,6 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         return token
 
 
-    # This is the parsing function for integer literals.
-    # It checks that we're looking at an integer literal token,
-    # moves past it, and returns a 'Literal' AST node
-    # containing the integer from the token.
     def parse_int_literal() -> ast.Literal:
         if peek().type != 'integer':
             raise Exception(f'{peek().loc}: expected an integer literal')
@@ -63,31 +59,6 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             left = ast.BinaryOp(left, operator, right)
         return left
 
-    # def parse_factor() -> ast.Expression:
-    #
-    #     if peek().text == '(':
-    #         return parse_parenthesized()
-    #     elif peek().text == 'if':
-    #         return parse_if_expr()
-    #     elif peek().type == 'integer':
-    #         return parse_int_literal()
-    #     elif peek().type == 'identifier':
-    #         return parse_identifier()
-    #     else:
-    #         raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
-
-    # def parse_binary_expression(level=0) -> ast.Expression:
-    #     if level == len(precedence_levels):
-    #         # 解析最高优先级表达式（包括一元操作符和基本表达式）
-    #         return parse_unary_expression()
-    #
-    #     left_expr = parse_binary_expression(level + 1)
-    #     while peek().text in precedence_levels[level]:
-    #         op_token = consume()
-    #         right_expr = parse_binary_expression(level + 1)
-    #         left_expr = ast.BinaryOp(left_expr, op_token.text, right_expr)
-    #
-    #     return left_expr
     def parse_binary_expression(level=0) -> ast.Expression:
         if level == len(precedence_levels):
             return parse_unary_expression()
@@ -112,10 +83,11 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         else:
             return parse_factor()
 
-
     def parse_factor() -> ast.Expression:
         if peek().text == '(':
             return parse_parenthesized()
+        elif peek().text == '{':
+            return parse_block()
         elif peek().text == 'if':
             return parse_if_expr()
         elif peek().type == 'identifier':
@@ -128,6 +100,76 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             return parse_int_literal()
         else:
             raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
+
+
+    # def parse_block() -> ast.BlockExpr:
+    #     consume('{')
+    #     expressions = []
+    #     result_expression = None
+    #
+    #     while not peek().text == '}':
+    #         if peek().text == 'var':
+    #             expr = parse_var_decl()
+    #         else:
+    #             expr = parse_expression()
+    #         if peek().text == ';':
+    #             consume(';')
+    #             expressions.append(expr)
+    #         elif peek().text == '}':
+    #             result_expression = expr
+    #         else:
+    #             raise Exception(f"{peek().loc}: Expected ';' or '}}'")
+    #
+    #     consume('}')
+    #     return BlockExpr(expressions, result_expression)
+
+    # def parse_block() -> ast.BlockExpr:
+    #     consume('{')
+    #     expressions = []
+    #     while not peek().text == '}':
+    #         expr = parse_expression()
+    #         expressions.append(expr)
+    #         print(peek().text,peek().type)
+    #         # Look ahead to decide whether to consume a semicolon
+    #         if peek().text == ';':
+    #             consume(';')  # Optional semicolon
+    #         elif peek().text not in ['}', 'if', 'while', '{', 'var']:  # Adjust based on valid start tokens
+    #             raise Exception(f"{peek().loc}: Expected ';' or '}}'")
+    #
+    #     consume('}')
+    #     return ast.BlockExpr(expressions)
+
+    def parse_block() -> ast.BlockExpr:
+        consume('{')
+        expressions = []
+        result_expression = None
+
+        while not peek().text == '}':
+
+            if peek().text in ['if', 'while', '{']:  # Starting a new block or control structure
+                expr = parse_expression()
+                expressions.append(expr)
+                # Check if next token is '}', in which case, this block/expression might be the result_expression
+                if peek().text == '}':
+                    result_expression = expressions.pop()  # Last expression is result_expression
+                elif peek().text == ';':  # Optional semicolon after a block/control structure
+                    consume(';')
+            else:
+                if peek().text == 'var':
+                    expr = parse_var_decl()
+                else:
+                    expr = parse_expression()
+                if peek().text == ';':
+                    consume(';')
+                    expressions.append(expr)
+                elif peek().text in ['}', 'if', 'while', '{']:  # No semicolon required before these
+                    expressions.append(expr)
+                else:
+                    raise Exception(f"{peek().loc}: Expected ';' or '}}' but found '{peek().text}'")
+
+        consume('}')
+
+        return BlockExpr(expressions, result_expression)
 
     def parse_function_call() -> ast.Expression:
         name_token = consume()  # 函数名
@@ -163,6 +205,13 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         consume(')')
         return expr
 
+    def parse_var_decl() -> ast.VarDecl:
+        consume('var')  # Consume the 'var' keyword
+        name_token = consume()  # Expect an identifier next
+        consume('=')  # Expect an '=' after the identifier
+        value = parse_expression()  # Parse the initialization expression
+        return VarDecl(name=name_token.text, value=value)
+
     def parse_expression_right() -> ast.Expression:
         left = parse_term()
 
@@ -191,15 +240,6 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         else:
             return parse_binary_expression(0)
 
-    # 左结合解析逻辑
-    # def parse_expression_left() -> ast.Expression:
-    #     # 之前的 parse_expression() 代码
-    #     left = parse_term()
-    #     while peek().text in ['+', '-']:
-    #         operator = consume().text
-    #         right = parse_term()
-    #         left = ast.BinaryOp(left=left, op=operator, right=right)
-    #     return left
 
     # 右结合解析逻辑
     def parse_expression_right() -> ast.Expression:
