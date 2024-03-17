@@ -2,6 +2,16 @@ from src.models import ast
 from src.models.ast import IfExpr, FunctionCall
 from src.models.types import Token
 
+precedence_levels = [
+    ['='],
+    ['or'],
+    ['and'],
+    ['==', '!='],
+    ['<', '<=', '>', '>='],
+    ['+', '-', '%'],
+    ['*', '/'],
+    ['not'],  # 一元操作符的优先级
+]
 
 def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
 
@@ -53,6 +63,40 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             left = ast.BinaryOp(left, operator, right)
         return left
 
+    # def parse_factor() -> ast.Expression:
+    #
+    #     if peek().text == '(':
+    #         return parse_parenthesized()
+    #     elif peek().text == 'if':
+    #         return parse_if_expr()
+    #     elif peek().type == 'integer':
+    #         return parse_int_literal()
+    #     elif peek().type == 'identifier':
+    #         return parse_identifier()
+    #     else:
+    #         raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
+
+    def parse_binary_expression(level=0) -> ast.Expression:
+        if level == len(precedence_levels):
+            # 解析最高优先级表达式（包括一元操作符和基本表达式）
+            return parse_unary_expression()
+
+        left_expr = parse_binary_expression(level + 1)
+        while peek().text in precedence_levels[level]:
+            op_token = consume()
+            right_expr = parse_binary_expression(level + 1)
+            left_expr = ast.BinaryOp(left_expr, op_token.text, right_expr)
+
+        return left_expr
+
+    def parse_unary_expression() -> ast.Expression:
+        if peek().text == 'not':
+            op_token = consume('not')
+            expr = parse_unary_expression()  # 递归以支持链式一元操作符
+            return ast.UnaryOp(op_token.text, expr)
+        else:
+            return parse_factor()
+
 
     def parse_factor() -> ast.Expression:
         if peek().text == '(':
@@ -60,27 +104,30 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         elif peek().text == 'if':
             return parse_if_expr()
         elif peek().type == 'identifier':
-            identifier = consume().text
-            if peek().text == '(':
-                return parse_function_call(identifier)
+            next_pos = pos + 1
+            if next_pos < len(tokens) and tokens[next_pos].text == '(':
+                return parse_function_call()
             else:
-                return ast.Identifier(name=identifier)
+                return parse_identifier()
         elif peek().type == 'integer':
             return parse_int_literal()
         else:
-            raise Exception(f'{peek().loc}: expected "(", an integer literal or an identifier')
+            raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
 
-    def parse_function_call(name: str) -> ast.Expression:
-        consume('(')  # Consume the '(' starting the argument list
+    def parse_function_call() -> ast.Expression:
+        name_token = consume()  # 函数名
+        consume('(')  # 消费左括号
         arguments = []
         if peek().text != ')':
             while True:
-                arguments.append(parse_expression())
-                if peek().text == ')':
+                arg = parse_expression()
+                arguments.append(arg)
+                if peek().text == ',':
+                    consume(',')  # 消费逗号，继续读取下一个参数
+                else:
                     break
-                consume(',')  # Consume ',' between arguments
-        consume(')')  # Consume the ')' ending the argument list
-        return FunctionCall(name, arguments)
+        consume(')')  # 消费右括号
+        return FunctionCall(name=name_token.text, arguments=arguments)
 
     def parse_if_expr() -> ast.Expression:
         consume('if')
@@ -100,17 +147,6 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         expr = parse_expression()
         consume(')')
         return expr
-
-    def parse_expression() -> ast.Expression:
-        # 先解析一个简单表达式或一个术语
-        left = parse_term()
-
-        while peek().text in ['+', '-']:
-            operator = consume().text
-            right = parse_term()  # 递归调用来处理右侧的表达式
-            left = ast.BinaryOp(left=left, op=operator, right=right)
-
-        return left
 
     def parse_expression_right() -> ast.Expression:
         left = parse_term()
@@ -138,17 +174,17 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         if right_associative:
             return parse_expression_right()
         else:
-            return parse_expression_left()
+            return parse_binary_expression(0)
 
     # 左结合解析逻辑
-    def parse_expression_left() -> ast.Expression:
-        # 之前的 parse_expression() 代码
-        left = parse_term()
-        while peek().text in ['+', '-']:
-            operator = consume().text
-            right = parse_term()
-            left = ast.BinaryOp(left=left, op=operator, right=right)
-        return left
+    # def parse_expression_left() -> ast.Expression:
+    #     # 之前的 parse_expression() 代码
+    #     left = parse_term()
+    #     while peek().text in ['+', '-']:
+    #         operator = consume().text
+    #         right = parse_term()
+    #         left = ast.BinaryOp(left=left, op=operator, right=right)
+    #     return left
 
     # 右结合解析逻辑
     def parse_expression_right() -> ast.Expression:

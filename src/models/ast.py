@@ -32,3 +32,8 @@ class IfExpr(Expression):
 class FunctionCall(Expression):
     name: str
     arguments: List[Expression]
+
+@dataclass
+class UnaryOp(Expression):
+    operator: str
+    operand: Expression

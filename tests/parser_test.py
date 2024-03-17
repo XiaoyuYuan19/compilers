@@ -3,7 +3,7 @@ from _ast import IfExp
 
 from src.compiler.tokenizer import tokenize
 from src.models import ast
-from src.models.ast import IfExpr, FunctionCall
+from src.models.ast import IfExpr, FunctionCall, BinaryOp, Identifier, UnaryOp
 from src.models.types import Token, SourceLocation
 
 # 假设你的解析器和AST定义在以下模块中
@@ -99,9 +99,50 @@ class TestFunctionCalls(unittest.TestCase):
         self.assertIsInstance(expr, FunctionCall)
         self.assertEqual(expr.name, "f")
         self.assertEqual(len(expr.arguments), 2)
-        # 可以进一步检查参数表达式的结构
 
+class TestParser(unittest.TestCase):
+    def test_function_call(self):
+        expression = "f(x, y + z)"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        self.assertIsInstance(expr, FunctionCall)
+        self.assertEqual(expr.name, "f")
+        self.assertEqual(len(expr.arguments), 2)
 
+    def test_binary_operators_precedence(self):
+        expression = "a + b * c"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        self.assertIsInstance(expr, ast.BinaryOp)
+        self.assertEqual(expr.op, '+')
+        self.assertIsInstance(expr.right, ast.BinaryOp)
+        self.assertEqual(expr.right.op, '*')
+
+    def test_unary_operator(self):
+        expression = "not not x"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        self.assertIsInstance(expr, ast.UnaryOp)
+        self.assertEqual(expr.operator, 'not')
+        self.assertIsInstance(expr.operand, ast.UnaryOp)
+
+    def test_assignment_right_associative(self):
+        expression = "a = b = c"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        self.assertIsInstance(expr, ast.BinaryOp)
+        self.assertEqual(expr.op, '=')
+        self.assertIsInstance(expr.right, ast.BinaryOp)
+        self.assertEqual(expr.right.op, '=')
+
+    def test_parentheses(self):
+        expression = "(a + b) * c"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        self.assertIsInstance(expr, ast.BinaryOp)
+        self.assertEqual(expr.op, '*')
+        self.assertIsInstance(expr.left, ast.BinaryOp)
+        self.assertEqual(expr.left.op, '+')
 
 if __name__ == '__main__':
     unittest.main()
