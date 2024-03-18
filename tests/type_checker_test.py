@@ -62,12 +62,6 @@ class TestUnitTypeChecker(unittest.TestCase):
         print(typecheck(node, self.symtab))
         self.assertIsInstance(typecheck(node, self.symtab), Unit)
 
-# tests/test_type_checker.py
-# src/tests/type_checker_test.py
-
-# Updates for the TestTypeChecker class remain the same.
-
-# Additional updates for TestUnitTypeChecker class:
 
 class TestTypeCheckerWithFunctionTypes(unittest.TestCase):
     def setUp(self):
@@ -162,6 +156,26 @@ class TestBlockExpr(unittest.TestCase):
         node = parse(tokenize(source_code))
         with self.assertRaises(TypeError):
             typecheck(node, self.symtab)
+
+class TestTypes(unittest.TestCase):
+    def test_int_type(self):
+        int_type = Int()
+        self.assertIsInstance(int_type, Int)
+
+    def test_bool_type(self):
+        bool_type = Bool()
+        self.assertIsInstance(bool_type, Bool)
+
+    def test_unit_type(self):
+        unit_type = Unit()
+        self.assertIsInstance(unit_type, Unit)
+
+    def test_type_equality(self):
+        int_type1 = Int()
+        int_type2 = Int()
+        bool_type = Bool()
+        self.assertEqual(str(int_type1), str(int_type2))
+        self.assertNotEqual(int_type1, bool_type)
 
 
 if __name__ == '__main__':

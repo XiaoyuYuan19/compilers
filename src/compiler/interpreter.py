@@ -74,7 +74,6 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
         # Handle Literal, BinaryOp, and IfExpr as before
         # Add new cases for variable declaration and block expression
 
-
         case ast.VarDecl():
             # 变量声明应该只在当前作用域中定义新变量
             value = interpret(node.value, symtab)

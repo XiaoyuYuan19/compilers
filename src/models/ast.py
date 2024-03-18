@@ -1,19 +1,22 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional, List
 
 from src.models.types import SourceLocation
-
+from src.models.types import Type, Unit
 
 @dataclass
 class Expression:
     """Base class for AST nodes representing expressions."""
     location: SourceLocation
 
-
 @dataclass
 class TypeExpr:
     """Base class for type expressions in the AST."""
     location: SourceLocation
+    type: Type = field(default=Unit(), init=False)
+
+    def __eq__(self, other):
+        return type(self) == type(other)
 
 @dataclass
 class IntTypeExpr(TypeExpr):

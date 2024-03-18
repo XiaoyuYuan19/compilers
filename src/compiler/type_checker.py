@@ -1,7 +1,8 @@
 from src.compiler.interpreter import interpret
 from src.models import ast, types
 from src.models.SymTab import SymTab
-from src.models.types import FunctionType
+from src.models.types import FunctionType, Type
+
 
 # In type_checker.py
 def typecheck_var_decl(node: ast.VarDecl, symtab: SymTab) -> types.Type:
@@ -22,8 +23,11 @@ def map_ast_type_expr_to_type(type_expr: ast.TypeExpr) -> types.Type:
     else:
         raise Exception("Unknown type expression")
 
+def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
+    node.type = _determine_type(node, symtab)
+    return node.type
 
-def typecheck(node: ast.Expression, symtab: SymTab) -> types.Type:
+def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
     match node:
         case ast.Literal(value=bool()):
             return types.Bool()
