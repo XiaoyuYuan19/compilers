@@ -37,10 +37,20 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
 
 
     def parse_int_literal() -> ast.Literal:
-        if peek().type != 'integer':
+        if peek().type != 'integer' :
             raise Exception(f'{peek().loc}: expected an integer literal')
         token = consume()
-        return ast.Literal(int(token.text),token.loc)
+        return ast.Literal(value=int(token.text),location=token.loc)
+
+    def parse_bool_literal() -> ast.Literal:
+        if peek().type != 'bool':
+            raise Exception(f'{peek().loc}: expected an integer literal')
+        token = consume()
+        if 'rue' in token.text:
+            value = True
+        else:
+            value = False
+        return ast.Literal(value=value,location=token.loc)
 
     def parse_identifier() -> ast.Identifier:
         if peek().type != 'identifier':
@@ -97,6 +107,8 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
                 return parse_identifier()
         elif peek().type == 'integer':
             return parse_int_literal()
+        elif peek().type == 'bool':
+            return parse_bool_literal()
         else:
             raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
 

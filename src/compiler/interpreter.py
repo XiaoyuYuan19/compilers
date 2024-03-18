@@ -6,6 +6,7 @@ Value = int | bool | None
 
 def interpret(node: ast.IfExpr) -> Value:
     match node:
+
         case ast.Literal():
             return node.value
 
@@ -20,7 +21,9 @@ def interpret(node: ast.IfExpr) -> Value:
                 raise ...
 
         case ast.IfExpr():
+            print(node.condition)
             if interpret(node.condition):
+                print(node.then_branch)
                 return interpret(node.then_branch)
             else:
                 return interpret(node.else_branch)
