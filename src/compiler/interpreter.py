@@ -26,11 +26,29 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
         #     else:
         #         raise ...
 
+        # case ast.BinaryOp():
+        #     a: Value = interpret(node.left, symtab)
+        #     b: Value = interpret(node.right, symtab)
+        #     op_func = symtab.lookup_variable(node.op)
+        #     return op_func(a, b)
+
         case ast.BinaryOp():
-            a: Value = interpret(node.left, symtab)
-            b: Value = interpret(node.right, symtab)
-            op_func = symtab.lookup_variable(node.op)
-            return op_func(a, b)
+            if node.op == 'and':
+                left_value = interpret(node.left, symtab)
+                if not left_value:  # 如果左侧为假，则不需要评估右侧
+                    return False
+                return interpret(node.right, symtab)
+            elif node.op == 'or':
+                left_value = interpret(node.left, symtab)
+                if left_value:  # 如果左侧为真，则不需要评估右侧
+                    return True
+                return interpret(node.right, symtab)
+            else:
+                a: Value = interpret(node.left, symtab)
+                b: Value = interpret(node.right, symtab)
+                op_func = symtab.lookup_variable(node.op)
+                return op_func(a, b)
+        # 处理其他二元操作符
 
         case ast.UnaryOp():
             a: Value = interpret(node.operand, symtab)
@@ -66,4 +84,3 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
             symtab.leave_scope()
             return result
 
-        # Extend other cases as needed

@@ -106,6 +106,26 @@ class TestInterpreter(unittest.TestCase):
     #     result = interpret(block, self.symtab)
     #     self.assertEqual(result, 5)
 
+    def test_short_circuit_logic(self):
+        # 测试'or'的短路行为
+        source_code = """{
+        var evaluated_right_hand_side = false;
+        true or { evaluated_right_hand_side = true; true };
+        evaluated_right_hand_side}# 应该为false
+        """
+        block = parse(tokenize(source_code))
+        result = interpret(block, self.symtab)
+        self.assertEqual(result, False)  # 确认右侧未被评估
+
+        # 测试'and'的短路行为
+        source_code = """{
+        var evaluated_right_hand_side = false;
+        false and { evaluated_right_hand_side = true; false };
+        evaluated_right_hand_side} #应该为false
+        """
+        block = parse(tokenize(source_code))
+        result = interpret(block, self.symtab)
+        self.assertEqual(result, False)  # 确认右侧未被评估
 
 if __name__ == '__main__':
     unittest.main()

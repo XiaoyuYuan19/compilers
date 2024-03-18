@@ -1,5 +1,7 @@
 import unittest
 
+from src.compiler.interpreter import interpret
+from src.compiler.parser import parse
 from src.models.types import Token, SourceLocation
 from src.compiler.tokenizer import tokenize
 
@@ -35,7 +37,6 @@ class TokenizerTest(unittest.TestCase):
         for token, expected in zip(tokens, expected_tokens):
             with self.subTest(token=token, expected=expected):
                 self.assertEqual(token, expected)
-
 
 if __name__ == "__main__":
     unittest.main()
