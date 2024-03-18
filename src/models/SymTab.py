@@ -6,20 +6,29 @@ class SymTab:
         self.scopes.append({})
 
     def leave_scope(self):
-        print(self.scopes)
         self.scopes.pop()
 
-    def define_variable(self, name, value):
-        if self.scopes:
-            self.scopes[-1][name] = value
-        print(self.scopes)
+    # def define_variable(self, name, value):
+    #     if self.scopes:
+    #         self.scopes[-1][name] = value
 
     def lookup_variable(self, name):
-        print(self.scopes)
         for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
         raise KeyError(f"Variable '{name}' not found.")
+
+    def define_variable(self, name, value):
+        # 只在当前作用域定义新变量
+        self.scopes[-1][name] = value
+
+    def update_variable(self, name, value):
+        # 在现有作用域中更新变量的值，如果变量存在
+        for scope in reversed(self.scopes):
+            if name in scope:
+                scope[name] = value
+                return
+        raise KeyError(f"Variable '{name}' not defined.")
 
 def add_builtin_symbols(symtab: SymTab):
     symtab.define_variable("+", lambda a, b: a + b)

@@ -51,7 +51,6 @@ class TestInterpreter(unittest.TestCase):
         ]
         for source_code, expected in tests:
             with self.subTest(source_code=source_code):
-                print(source_code)
                 block = parse(tokenize(source_code))
                 result = interpret(block, self.symtab)
                 self.assertEqual(result, expected)
@@ -126,6 +125,18 @@ class TestInterpreter(unittest.TestCase):
         block = parse(tokenize(source_code))
         result = interpret(block, self.symtab)
         self.assertEqual(result, False)  # 确认右侧未被评估
+
+    def test_if_then_else(self):
+        source_code = """{
+        var x = 10;
+        if x > 5 then { x = 2; } else { x = 3; }
+        x }  # 应该为2
+        """
+        block = parse(tokenize(source_code))
+        result = interpret(block, self.symtab)
+        self.assertEqual(result, 2)
+
+
 
 if __name__ == '__main__':
     unittest.main()

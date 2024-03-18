@@ -33,6 +33,16 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
         #     return op_func(a, b)
 
         case ast.BinaryOp():
+            if node.op == "=":
+                # 确保左侧是标识符
+                if isinstance(node.left, ast.Identifier):
+                    # 计算右侧表达式的值
+                    value = interpret(node.right, symtab)
+                    # 更新现有变量的值
+                    symtab.update_variable(node.left.name, value)
+                    return value
+                else:
+                    raise TypeError("Left side of assignment must be an identifier.")
             if node.op == 'and':
                 left_value = interpret(node.left, symtab)
                 if not left_value:  # 如果左侧为假，则不需要评估右侧
@@ -56,7 +66,6 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
             return op_func(a)
 
         case ast.IfExpr():
-            print(node.condition)
             if interpret(node.condition,symtab):
                 print(node.then_branch)
                 return interpret(node.then_branch,symtab)
@@ -65,7 +74,9 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
         # Handle Literal, BinaryOp, and IfExpr as before
         # Add new cases for variable declaration and block expression
 
+
         case ast.VarDecl():
+            # 变量声明应该只在当前作用域中定义新变量
             value = interpret(node.value, symtab)
             symtab.define_variable(node.name, value)
             return value
@@ -84,3 +95,14 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
             symtab.leave_scope()
             return result
 
+        # case ast.WhileLoop():
+        #     while interpret(node.condition, symtab):
+        #         interpret(node.body, symtab)
+        #     return None
+
+        # case ast.FunctionCall():
+        #     # 例子：调用内置函数
+        #     if node.name in builtin_functions:
+        #         arguments = [interpret(arg, symtab) for arg in node.arguments]
+        #         return builtin_functions[node.name](*arguments)
+        #     # 添加对用户定义函数的支持...
