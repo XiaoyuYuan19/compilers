@@ -20,3 +20,20 @@ class SymTab:
             if name in scope:
                 return scope[name]
         raise KeyError(f"Variable '{name}' not found.")
+
+def add_builtin_symbols(symtab: SymTab):
+    symtab.define_variable("+", lambda a, b: a + b)
+    symtab.define_variable("-", lambda a, b: a - b)
+    symtab.define_variable("*", lambda a, b: a * b)
+    symtab.define_variable("/", lambda a, b: a / b)
+    symtab.define_variable("%", lambda a, b: a % b)
+    symtab.define_variable("==", lambda a, b: a == b)
+    symtab.define_variable("!=", lambda a, b: a != b)
+    symtab.define_variable("<", lambda a, b: a < b)
+    symtab.define_variable("<=", lambda a, b: a <= b)
+    symtab.define_variable(">", lambda a, b: a > b)
+    symtab.define_variable(">=", lambda a, b: a >= b)
+    symtab.define_variable("and", lambda a, b: a and b)
+    symtab.define_variable("or", lambda a, b: a or b)
+    symtab.define_variable("unary_-", lambda a: -a)
+    symtab.define_variable("unary_not", lambda a: not a)

@@ -9,7 +9,7 @@ L = SourceLocation()
 
 class TokenizerTest(unittest.TestCase):
     def test_tokenizer_functionality(self):
-        code = "\n var \nx = (100 + 20) * 2.1; // 1 \n if false then 5"
+        code = "\n var \nx = (100 + 20) * 2.1; // 1 \n if false then 5 "
         expected_tokens = [
             Token("var", "identifier", L),
             Token("x", "identifier", L),
