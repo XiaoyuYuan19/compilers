@@ -1,10 +1,17 @@
 from src.models import types
 from src.models.types import FunctionType, Int, Bool, Unit
 
+from typing import Generic, TypeVar, Dict, Any
 
-class SymTab:
-    def __init__(self):
+# Create a type variable for the SymTab class
+T = TypeVar('T')
+
+class SymTab(Generic[T]):
+    def __init__(self, parent: 'SymTab[T]' = None):
+        self.parent = parent
+        self.symbols: Dict[str, T] = {}
         self.scopes = [{}]
+
 
     def enter_scope(self):
         self.scopes.append({})

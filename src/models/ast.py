@@ -33,7 +33,6 @@ class VarDecl(Expression):
     value: Expression
 
 
-
 @dataclass
 class Literal(Expression):
     value: int | bool | None
