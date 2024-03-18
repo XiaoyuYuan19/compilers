@@ -67,17 +67,17 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
 
         case ast.IfExpr():
             if interpret(node.condition,symtab):
-                print(node.then_branch)
                 return interpret(node.then_branch,symtab)
             else:
                 return interpret(node.else_branch,symtab)
         # Handle Literal, BinaryOp, and IfExpr as before
         # Add new cases for variable declaration and block expression
 
+
         case ast.VarDecl():
             # 变量声明应该只在当前作用域中定义新变量
             value = interpret(node.value, symtab)
-            symtab.define_variable(node.name, value)
+            symtab.define_variable(node.name, value,node.type)
             return value
 
         case ast.Identifier():

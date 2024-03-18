@@ -53,6 +53,7 @@ class TestInterpreter(unittest.TestCase):
             with self.subTest(source_code=source_code):
                 block = parse(tokenize(source_code))
                 result = interpret(block, self.symtab)
+                print(result)
                 self.assertEqual(result, expected)
 
     def test_comparison_operators(self):
@@ -80,6 +81,7 @@ class TestInterpreter(unittest.TestCase):
             with self.subTest(source_code=source_code):
                 block = parse(tokenize(source_code))
                 result = interpret(block, self.symtab)
+                # print(result)
                 self.assertEqual(result, expected)
 
     def test_variable_scope(self):

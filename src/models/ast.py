@@ -1,30 +1,30 @@
 from dataclasses import dataclass, field
 from typing import Optional, List
 
-from src.models.types import SourceLocation
+from src.models.types import SourceLocation, Int, Bool
 from src.models.types import Type, Unit
 
 @dataclass
 class Expression:
     """Base class for AST nodes representing expressions."""
     location: SourceLocation
+    type: Type = field(default=Unit(), init=False)
 
 @dataclass
 class TypeExpr:
     """Base class for type expressions in the AST."""
     location: SourceLocation
-    type: Type = field(default=Unit(), init=False)
 
     def __eq__(self, other):
         return type(self) == type(other)
 
 @dataclass
 class IntTypeExpr(TypeExpr):
-    pass
+    type : Type = field(default=Int(), init=0)
 
 @dataclass
 class BoolTypeExpr(TypeExpr):
-    pass
+    type : Type = field(default=Bool(), init=False)
 
 @dataclass
 class VarDecl(Expression):
@@ -75,5 +75,5 @@ class BlockExpr(Expression):
 class VarDecl(Expression):
     name: str
     value: Expression
-    type_annotation : TypeExpr
+    type_annotation : type
 

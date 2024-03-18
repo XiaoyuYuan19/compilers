@@ -15,7 +15,11 @@ class SymTab:
     def lookup_variable(self, name):
         for scope in reversed(self.scopes):
             if name in scope:
-                return scope[name]
+                value = scope[name]
+                if str(type(value)) == "<class 'tuple'>":
+                    return scope[name][0]
+                else:
+                    return scope[name]
         raise KeyError(f"Variable '{name}' not found.")
 
     def update_variable(self, name, value):
@@ -45,20 +49,20 @@ def add_builtin_symbols(symtab: SymTab):
     symtab.define_variable("false", False, types.Bool())
 
     symtab.define_variable("+", lambda a, b: a + b, FunctionType([Int(), Int()], Int()))
-    symtab.define_variable("-", lambda a, b: a + b, FunctionType([Int(), Int()], Int()))
-    symtab.define_variable("*", lambda a, b: a + b, FunctionType([Int(), Int()], Int()))
-    symtab.define_variable("/", lambda a, b: a + b, FunctionType([Int(), Int()], Int()))
-    symtab.define_variable("%", lambda a, b: a + b, FunctionType([Int(), Int()], Int()))
+    symtab.define_variable("-", lambda a, b: a - b, FunctionType([Int(), Int()], Int()))
+    symtab.define_variable("*", lambda a, b: a * b, FunctionType([Int(), Int()], Int()))
+    symtab.define_variable("/", lambda a, b: a / b, FunctionType([Int(), Int()], Int()))
+    symtab.define_variable("%", lambda a, b: a % b, FunctionType([Int(), Int()], Int()))
 
-    symtab.define_variable("==", lambda a, b: a < b, FunctionType([Int(), Int()], Bool()))
-    symtab.define_variable("!=", lambda a, b: a < b, FunctionType([Int(), Int()], Bool()))
+    symtab.define_variable("==", lambda a, b: a == b, FunctionType([Int(), Int()], Bool()))
+    symtab.define_variable("!=", lambda a, b: a != b, FunctionType([Int(), Int()], Bool()))
     symtab.define_variable("<", lambda a, b: a < b, FunctionType([Int(), Int()], Bool()))
-    symtab.define_variable("<=", lambda a, b: a < b, FunctionType([Int(), Int()], Bool()))
-    symtab.define_variable(">", lambda a, b: a < b, FunctionType([Int(), Int()], Bool()))
-    symtab.define_variable(">=", lambda a, b: a < b, FunctionType([Int(), Int()], Bool()))
+    symtab.define_variable("<=", lambda a, b: a <= b, FunctionType([Int(), Int()], Bool()))
+    symtab.define_variable(">", lambda a, b: a > b, FunctionType([Int(), Int()], Bool()))
+    symtab.define_variable(">=", lambda a, b: a >= b, FunctionType([Int(), Int()], Bool()))
 
-    symtab.define_variable("and", lambda a, b: a < b, FunctionType([Bool(), Bool()], Bool()))
+    symtab.define_variable("and", lambda a, b: a and b, FunctionType([Bool(), Bool()], Bool()))
     symtab.define_variable("or", lambda a, b: a or b, FunctionType([Bool(), Bool()], Bool()))
-    symtab.define_variable("unary_not", lambda a, b: a or b, FunctionType([Bool()], Bool()))
+    symtab.define_variable("unary_not", lambda a: not a, FunctionType([Bool()], Bool()))
     symtab.define_variable("unary_-", lambda a: -a, FunctionType([Int()], Int()))
     symtab.define_variable("print_int", print, FunctionType([Int()], Unit()))
