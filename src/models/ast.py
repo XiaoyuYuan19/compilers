@@ -9,6 +9,28 @@ class Expression:
     """Base class for AST nodes representing expressions."""
     location: SourceLocation
 
+
+@dataclass
+class TypeExpr:
+    """Base class for type expressions in the AST."""
+    location: SourceLocation
+
+@dataclass
+class IntTypeExpr(TypeExpr):
+    pass
+
+@dataclass
+class BoolTypeExpr(TypeExpr):
+    pass
+
+@dataclass
+class VarDecl(Expression):
+    name: str
+    type_annotation: Optional[TypeExpr]
+    value: Expression
+
+
+
 @dataclass
 class Literal(Expression):
     value: int | bool | None
@@ -50,5 +72,5 @@ class BlockExpr(Expression):
 class VarDecl(Expression):
     name: str
     value: Expression
-
+    type_annotation : TypeExpr
 

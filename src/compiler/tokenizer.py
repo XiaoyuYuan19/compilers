@@ -4,7 +4,7 @@ from src.models.types import Token, SourceLocation
 
 def tokenize(source_code: str) -> List[Token]:
     source_code = source_code.replace('//','#')
-    token_pattern = r'(\s+)|(\d+\.\d*|\.\d+|\d+)|(\b(True|False|true|false)\b)|([A-Za-z_][A-Za-z0-9_]*)|(\*\*|==|!=|<=|>=|&&|\|\||[\+\-*/%=<>!]{1,2})|([\(\)\{\},;])|(//.*|#.*)'
+    token_pattern = r'(\s+)|(\d+\.\d*|\.\d+|\d+)|(\b(True|False|true|false)\b)|([A-Za-z_][A-Za-z0-9_]*)|(\*\*|==|!=|<=|>=|&&|\|\||[\+\-*/%=<>!]{1,2})|([\(\)\{\},;:])|(//.*|#.*)'
     # token_pattern = r'(\s+)|(\d+\.\d*|\.\d+|\d+)|(\b(True|False|true|false)\b)|(\b(and|or|not)\b)|([A-Za-z_][A-Za-z0-9_]*)|(\*\*|==|!=|<=|>=|&&|\|\||[\+\-*/=<>!])|([\(\)\{\},;])|(//.*|#.*)'
 
     tokens = []

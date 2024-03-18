@@ -231,8 +231,30 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         else:
             return left
 
+    def parse_type_expr(token: Token) -> ast.TypeExpr:
+        if token.text == "Int":
+            return ast.IntTypeExpr(location=token.loc)
+        elif token.text == "Bool":
+            return ast.BoolTypeExpr(location=token.loc)
+        else:
+            raise Exception(f"Unknown type: {token.text}")
+
+    def parse_var_decl() -> ast.VarDecl:
+        name_token = consume('var')  # Consume the function name token, capturing the function name
+        function_location = name_token.loc
+        name = consume().text
+        type_annotation = None
+        if peek().text == ":":
+            consume(":")
+            type_annotation = parse_type_expr(consume())
+        consume("=")
+        value = parse_expression()
+        return ast.VarDecl(name=name, type_annotation=type_annotation, value=value, location=function_location)
+
     res = parse_expression()
     if peek().type != 'end':
         raise Exception(f"Unexpected token at {peek().loc}: '{peek().text}'")
 
     return res
+
+    # In parser.py
