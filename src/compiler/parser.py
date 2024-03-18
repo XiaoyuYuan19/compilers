@@ -138,8 +138,11 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
                 if peek().text == ';':
                     consume(';')
                     expressions.append(expr)
-                elif peek().text in ['}', 'if', 'while', '{']:  # No semicolon required before these
+                elif peek().text == '}':
+                    result_expression = expr  # Last expression is result_expression
+                elif peek().text in ['if', 'while', '{']:  # No semicolon required before these
                     expressions.append(expr)
+
                 else:
                     raise Exception(f"{peek().loc}: Expected ';' or '}}' but found '{peek().text}'")
 

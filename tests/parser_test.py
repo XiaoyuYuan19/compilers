@@ -153,26 +153,27 @@ class TestBlockExpressions(unittest.TestCase):
         self.assertIsNone(expr.result_expression)
 
     def test_block_with_result_expression(self):
-        tokens = tokenize("{ a; b }")
+        tokens = tokenize("{ a ; b }")
         expr = parse(tokens)
+        print(expr)
         self.assertIsInstance(expr, BlockExpr)
         # Expecting 2 expressions in the list, since the block parsing logic
         # does not currently distinguish 'b' as a result expression implicitly.
-        self.assertEqual(len(expr.expressions), 2)
-        self.assertIsInstance(expr.expressions[1], ast.Identifier)
-        self.assertEqual(expr.expressions[1].name, "b")
-        # If 'b' was expected to be a result_expression but wasn't, check parse_block's logic
-        self.assertIsNone(expr.result_expression)
+        self.assertEqual(len(expr.expressions), 1)
+        self.assertIsInstance(expr.result_expression, ast.Identifier)
+        self.assertEqual(expr.result_expression.name, "b")
 
     def test_block_missing_semicolon(self):
         tokens = tokenize("{ a b }")
         with self.assertRaises(Exception):
             parse(tokens)
 
+
 class TestVarDeclarations(unittest.TestCase):
     def test_var_declaration_in_block(self):
         tokens = tokenize("{ var x = 123; }")
         expr = parse(tokens)
+        print(expr)
         self.assertIsInstance(expr, BlockExpr)
         self.assertIsInstance(expr.expressions[0], VarDecl)
         self.assertEqual(expr.expressions[0].name, "x")
@@ -209,6 +210,7 @@ class TestFlexibleSemicolons(unittest.TestCase):
         expression = "{ if true then { a } else { b } 3 }"
         tokens = tokenize(expression)
         expr = parse(tokens)
+        print(expr)
         # Assert the correct parsing of the if-then-else structure and the result expression
 
     def test_nested_blocks_assignment(self):
