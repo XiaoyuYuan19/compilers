@@ -1,26 +1,6 @@
 from src.models import ir
 
-# def get_all_ir_variables(instructions):
-#     variables = set()
-#     for insn in instructions:
-#         # 对于dest属性
-#         if hasattr(insn, "dest") and insn.dest is not None:
-#
-#             print('dest',insn.cond)
-#             variables.add(insn.dest)
-#         # 对于source属性
-#         if hasattr(insn, "source") and insn.source is not None:
-#             variables.add(insn.source)
-#         # 对于args属性，它是一个列表，需要遍历
-#         if hasattr(insn, "args"):
-#             for arg in insn.args:
-#                 if arg is not None:
-#                     variables.add(arg)
-#         # 对于cond属性
-#         if hasattr(insn, "cond") and insn.cond is not None:
-#             print('cond',insn.cond)
-#             variables.add(insn.cond)
-#     return list(variables)
+
 
 def get_all_ir_variables(instructions):
     variables = set()
@@ -32,10 +12,11 @@ def get_all_ir_variables(instructions):
         if hasattr(insn, "source") and insn.source is not None:
             variables.add(insn.source)
         # 对于args属性，它是一个列表，需要遍历
-        # if hasattr(insn, "args"):
-        #     for arg in insn.args:
-        #         if arg is not None:
-        #             variables.add(arg)
+        if hasattr(insn, "args"):
+            for arg in insn.args:
+                if arg is not None:
+                    print('arg',arg)
+                    variables.add(arg)
     return list(variables)
 
 class Locals:

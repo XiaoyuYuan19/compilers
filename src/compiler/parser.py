@@ -197,13 +197,13 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
         consume(')')
         return expr
 
-    def parse_var_decl() -> ast.VarDecl:
-        name_token = consume('var')  # Consume the function name token, capturing the function name
-        function_location = name_token.loc
-        name_token = consume()  # Expect an identifier next
-        consume('=')  # Expect an '=' after the identifier
-        value = parse_expression()  # Parse the initialization expression
-        return ast.VarDecl(name=name_token.text, value=value,location=function_location)
+    # def parse_var_decl() -> ast.VarDecl:
+    #     name_token = consume('var')  # Consume the function name token, capturing the function name
+    #     function_location = name_token.loc
+    #     name_token = consume()  # Expect an identifier next
+    #     consume('=')  # Expect an '=' after the identifier
+    #     value = parse_expression()  # Parse the initialization expression
+    #     return ast.VarDecl(name=name_token.text, value=value,location=function_location)
 
     def parse_expression_right() -> ast.Expression:
         left = parse_term()
@@ -259,7 +259,8 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             consume(":")
             type_annotation = parse_type_expr(consume())
         consume("=")
-        value = parse_expression()
+        value = parse_expression().value
+        # bool or int
         return ast.VarDecl(name=name, type_annotation=type_annotation, value=value, location=function_location)
 
     res = parse_expression()

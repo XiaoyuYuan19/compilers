@@ -174,11 +174,26 @@ class TestVarDeclarations(unittest.TestCase):
         tokens = tokenize("{ var x = 123; }")
         expr = parse(tokens)
         print(expr)
+
         self.assertIsInstance(expr, BlockExpr)
         self.assertIsInstance(expr.expressions[0], VarDecl)
         self.assertEqual(expr.expressions[0].name, "x")
         self.assertIsInstance(expr.expressions[0].value, Literal)
         self.assertEqual(expr.expressions[0].value.value, 123)
+
+
+
+class TestVarDeclarations(unittest.TestCase):
+    def test_var_declaration_in_block(self):
+        tokens = tokenize("{ var x : Int = 123; }")
+        expr = parse(tokens)
+        print(expr)
+
+        self.assertIsInstance(expr, BlockExpr)
+        self.assertIsInstance(expr.expressions[0], VarDecl)
+        self.assertEqual(expr.expressions[0].name, "x")
+        # self.assertIsInstance(expr.expressions[0].value, Literal)
+        self.assertEqual(expr.expressions[0].value, 123)
 
 class TestFlexibleSemicolons(unittest.TestCase):
     def test_blocks_without_semicolons(self):

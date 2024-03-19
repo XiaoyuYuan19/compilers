@@ -41,7 +41,9 @@ class SymTab(Generic[T]):
         self.scopes[-1][name] = (value, var_type)
 
     def lookup_variable_type(self, name):
+        # print('sc', self.scopes)
         for scope in reversed(self.scopes):
+
             if name in scope:
                 _, var_type = scope[name]
                 return var_type

@@ -38,11 +38,12 @@ class IRGeneratorTestCase(unittest.TestCase):
         self.assertEqual(ir_instructions[2].fun, "+")
 
     def test_var_decl_with_assignment(self):
-        source_code = "{ var x: Int = 42 ;  }"
+        source_code = "{ var x: Int = 42 ; x }"
         ast_root = parse(tokenize(source_code))
-        print(ast_root)
+        # print(ast_root)
         ir_instructions = generate_ir(ast_root)
-        print(ir_instructions)
+        for i in ir_instructions:
+            print(i)
         self.assertIsInstance(ir_instructions[0], LoadIntConst)
         self.assertIsInstance(ir_instructions[1], Copy)
         self.assertEqual(ir_instructions[0].value, 42)
@@ -86,9 +87,11 @@ class TestIRGeneratorScopes(unittest.TestCase):
     def test_nested_scope_var_decl_with_assignment(self):
         source_code = "{ var x: Int = 42  { var x: Int = 1 } x }"
         ast_root = parse(tokenize(source_code))
-        print(ast_root)
+        print('ast',ast_root)
         ir_instructions = generate_ir(ast_root)
 
+        for i in ir_instructions:
+            print(i)
         # 检查全局变量x被初始化为42
         self.assertIsInstance(ir_instructions[0], LoadIntConst, "首条指令应该是 LoadIntConst 初始化全局x为42")
         self.assertEqual(ir_instructions[0].value, 42, "全局x的值应为42")
@@ -97,6 +100,19 @@ class TestIRGeneratorScopes(unittest.TestCase):
         self.assertIsInstance(ir_instructions[2], LoadIntConst, "第三条指令应该是 LoadIntConst 初始化局部x为1")
         self.assertEqual(ir_instructions[2].value, 1, "局部x的值应为1")
         # self.assertIsInstance(ir_instructions[-1], Copy, "最后一条指令应该是Copy，表示引用了x的值")
+
+# class TestIRGenerator(unittest.TestCase):
+#
+#     def test_generate_ir_while_expr(self):
+#         # 构建一个简单的 while 循环的抽象语法树
+#
+#         source_code = "{ var x: Int = 4 ; while False do x = x - 1; }"
+#         ast_root = parse(tokenize(source_code))
+#         print(ast_root)
+#         ir_instructions = generate_ir(ast_root)
+#
+#         for i in ir_instructions:
+#             print(i)
 
 
 if __name__ == '__main__':

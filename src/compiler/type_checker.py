@@ -56,7 +56,9 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
                     value = typecheck(node.right, symtab)
                     # print('val',value)
                     # 检查类型是否一致
-                    if not isinstance(symtab.lookup_variable_type(node.left.name),value):
+                    # print('ini',symtab.lookup_variable_type(node.left.name),value)
+                    if str(symtab.lookup_variable_type(node.left.name)) != str(value):
+                    # if not isinstance(symtab.lookup_variable_type(node.left.name),value):
                         raise TypeError("Left side of assignment must be isinstance with right side")
                     # 在符号表中更新或定义变量
                     symtab.update_variable(node.left.name, value)
@@ -124,15 +126,15 @@ def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
         case ast.VarDecl():
             return typecheck_var_decl(node, symtab)
 
-        # case ast.WhileExpr():
-        #     cond_type = typecheck(node.condition, symtab)
-        #     print('con',cond_type)
-        #     if not isinstance(cond_type, types.Bool):
-        #         raise TypeError("Condition in 'while' must be a Bool")
-        #     body_type = typecheck(node.body, symtab)
-        #     print('body',body_type)
-        #     # if not isinstance(body_type, types.Unit):
-        #     #     raise TypeError("Body of 'while' must not produce a value")
-        #     return types.Unit()
+        case ast.WhileExpr():
+            cond_type = typecheck(node.condition, symtab)
+            print('con',cond_type)
+            if not isinstance(cond_type, types.Bool):
+                raise TypeError("Condition in 'while' must be a Bool")
+            body_type = typecheck(node.body, symtab)
+            print('body',body_type)
+            # if not isinstance(body_type, types.Unit):
+            #     raise TypeError("Body of 'while' must not produce a value")
+            return types.Unit()
 
 

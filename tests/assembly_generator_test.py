@@ -38,11 +38,13 @@ class AssemblyGeneratorDetailedTest(unittest.TestCase):
         self.assertIn("jmp", assembly_code)
 
     def test_variable_declaration_and_usage(self):
-        source_code = "{ var x = true; x; }"
+        source_code = "{ var x = true; x ; }"
         tokens = tokenize(source_code)
         ast_root = parse(tokens)
         ir_instructions = generate_ir(ast_root)
+
         assembly_code = generate_assembly(ir_instructions)
+        print('ass',assembly_code)
         self.assertIn("movq $1", assembly_code)  # 检查变量x赋值为true
         # 此测试可能需要更详细的检查来确认变量x的使用
 
@@ -52,11 +54,25 @@ class AssemblyGeneratorDetailedTest(unittest.TestCase):
         tokens = tokenize(source_code)
         ast_root = parse(tokens)
         ir_instructions = generate_ir(ast_root)
-        assembly_code = generate_assembly(ir_instructions)
+        for i in ir_instructions:
+            print(i)
+        # assembly_code = generate_assembly(ir_instructions)
         # self.assertIn("movq $1", assembly_code)  # 检查x为true时的情况
         # self.assertIn("jne", assembly_code)  # 检查条件跳转指令
         # 这个测试可能需要更多的逻辑来完全验证if-else的行为
 
+
+    def test_if_else_logic(self):
+        source_code = "{ var x : Bool = true; if x then 1 else 2; }"
+        tokens = tokenize(source_code)
+        ast_root = parse(tokens)
+        ir_instructions = generate_ir(ast_root)
+        for i in ir_instructions:
+            print(i)
+        assembly_code = generate_assembly(ir_instructions)
+        self.assertIn("movq $1", assembly_code)  # 检查x为true时的情况
+        self.assertIn("jne", assembly_code)  # 检查条件跳转指令
+        # 这个测试可能需要更多的逻辑来完全验证if-else的行为
 
 if __name__ == "__main__":
     unittest.main()
