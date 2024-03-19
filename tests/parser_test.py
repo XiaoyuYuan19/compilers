@@ -219,5 +219,33 @@ class TestFlexibleSemicolons(unittest.TestCase):
         expr = parse(tokens)
         # Assert that the assignment to x correctly includes the nested block structure as its value
 
+class TestWhileLoop(unittest.TestCase):
+    def test_while_loop(self):
+        expression = "while x do { x = x - 1 }"
+        tokens = tokenize(expression)
+        expr = parse(tokens)
+        print(expr)
+        expected_while_expr = ast.WhileExpr(
+            condition=ast.Identifier(name='x', location=SourceLocation(file='<unknown>', line=1, column=7)),
+            body=ast.BlockExpr(
+                expressions=[],
+                result_expression=ast.BinaryOp(
+                    left=ast.Identifier(name='x', location=SourceLocation(file='<unknown>', line=1, column=14)),
+                    op='=',
+                    right=ast.BinaryOp(
+                        left=ast.Identifier(name='x', location=SourceLocation(file='<unknown>', line=1, column=18)),
+                        op='-',
+                        right=ast.Literal(value=1, location=SourceLocation(file='<unknown>', line=1, column=22)),
+                        location=SourceLocation(file='<unknown>', line=1, column=20)
+                    ),
+                    location=SourceLocation(file='<unknown>', line=1, column=16)
+                ),
+                location=SourceLocation(file='<unknown>', line=1, column=12)
+            ),
+            location=SourceLocation(file='<unknown>', line=1, column=1)
+        )
+
+        self.assertEqual(expr, expected_while_expr)
+
 if __name__ == '__main__':
     unittest.main()

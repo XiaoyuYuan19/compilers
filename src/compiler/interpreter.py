@@ -94,10 +94,10 @@ def interpret(node: ast.IfExpr, symtab: SymTab) -> Value:
             symtab.leave_scope()
             return result
 
-        # case ast.WhileLoop():
-        #     while interpret(node.condition, symtab):
-        #         interpret(node.body, symtab)
-        #     return None
+        case ast.WhileExpr():
+            while interpret(node.condition, symtab):
+                interpret(node.body, symtab)
+            return None
 
         # case ast.FunctionCall():
         #     # 例子：调用内置函数

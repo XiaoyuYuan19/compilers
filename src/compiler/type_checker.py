@@ -5,6 +5,7 @@ from src.models.types import FunctionType, Type
 
 def typecheck_var_decl(node: ast.VarDecl, symtab: SymTab) -> types.Type:
     value_type = typecheck(node.value, symtab)
+    annotated_type = 0
     if node.type_annotation:
         # Map AST type expression to type checker's type
         annotated_type = map_ast_type_expr_to_type(node.type_annotation)
@@ -20,18 +21,23 @@ def map_ast_type_expr_to_type(type_expr: ast.TypeExpr) -> types.Type:
         return types.Bool()
     else:
         raise Exception("Unknown type expression")
-def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
-    node.type = _determine_type(node, symtab)
-    return node.type
 
-def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
+# def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
+#     node.type = _determine_type(node, symtab)
+#     return node.type
+
+def typecheck(node: ast.Expression, symtab: SymTab) -> Type:
     match node:
         case ast.Literal(value=bool()):
             return types.Bool()
         case ast.Literal(value=int()):
             return types.Int()
         case ast.Identifier():
-            return symtab.lookup_variable_type(node.name)
+            # print('idn',node)
+            var_type = symtab.lookup_variable_type(node.name)
+            if var_type is None:
+                raise TypeError(f"Variable '{node.name}' is not defined")
+            return var_type
 
         case ast.UnaryOp():
             operand_type = typecheck(node.operand, symtab)
@@ -47,9 +53,13 @@ def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
                 # 确保左侧是标识符
                 if isinstance(node.left, ast.Identifier):
                     # 计算右侧表达式的值
-                    value = _determine_type(node.right, symtab)
+                    value = typecheck(node.right, symtab)
+                    # print('val',value)
+                    # 检查类型是否一致
+                    if not isinstance(symtab.lookup_variable_type(node.left.name),value):
+                        raise TypeError("Left side of assignment must be isinstance with right side")
                     # 在符号表中更新或定义变量
-                    symtab.define_variable(node.left.name, value)
+                    symtab.update_variable(node.left.name, value)
                     return value
                 else:
                     raise TypeError("Left side of assignment must be an identifier.")
@@ -60,6 +70,7 @@ def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
 
             if isinstance(op_type, FunctionType):
                 # Validate operand types
+                print('type(left_type), type(right_type)',type(left_type), type(right_type))
                 if [type(left_type), type(right_type)] != [type(t) for t in op_type.param_types]:
                     raise TypeError(f"Operand type mismatch for operator '{node.op}'")
                 return op_type.return_type
@@ -67,12 +78,15 @@ def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
             else:
                 raise TypeError(f"Operator '{node.op}' not defined")
         case ast.IfExpr():
+
             cond_type = typecheck(node.condition, symtab)
+
+            # print('in if', node.condition,cond_type)
             if not isinstance(cond_type, types.Bool):
                 raise TypeError("Condition in 'if' must be a Bool")
             then_type = typecheck(node.then_branch, symtab)
             if node.else_branch is None:
-                # if not isi    nstance(then_type, types.Unit):
+                # if not isinstance(then_type, types.Unit):
                 #     raise TypeError("Then branch of 'if' without 'else' must not produce a value")
                 return types.Unit()
             else:
@@ -99,7 +113,9 @@ def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
             return func_type.return_type
         case ast.BlockExpr():
             symtab.enter_scope()
-            for expr in node.expressions[:-1]:
+
+            # for expr in node.expressions[:-1]:
+            for expr in node.expressions:
                 typecheck(expr, symtab)  # Discard types of non-final expressions
             result_type = types.Unit() if not node.result_expression else typecheck(node.result_expression, symtab)
             symtab.leave_scope()
@@ -107,11 +123,16 @@ def _determine_type(node: ast.Expression, symtab: SymTab) -> Type:
 
         case ast.VarDecl():
             return typecheck_var_decl(node, symtab)
-        # case ast.WhileLoop():
+
+        # case ast.WhileExpr():
         #     cond_type = typecheck(node.condition, symtab)
+        #     print('con',cond_type)
         #     if not isinstance(cond_type, types.Bool):
         #         raise TypeError("Condition in 'while' must be a Bool")
         #     body_type = typecheck(node.body, symtab)
-        #     if not isinstance(body_type, types.Unit):
-        #         raise TypeError("Body of 'while' must not produce a value")
+        #     print('body',body_type)
+        #     # if not isinstance(body_type, types.Unit):
+        #     #     raise TypeError("Body of 'while' must not produce a value")
         #     return types.Unit()
+
+

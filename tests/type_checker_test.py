@@ -51,11 +51,6 @@ class TestUnitTypeChecker(unittest.TestCase):
         self.symtab = SymTab()
         # 添加内置符号，如果有的话
 
-    # def test_while_loop(self):
-    #     source_code = "while true do {}"
-    #     node = parse(tokenize(source_code))
-    #     self.assertIsInstance(typecheck(node, self.symtab), Unit)
-
     def test_if_then_no_else(self):
         source_code = "if true then { 1 }"
         node = parse(tokenize(source_code))
@@ -127,7 +122,7 @@ class TestBlockTypeCheck(unittest.TestCase):
         self.assertIsInstance(result_type, Bool)
 
     def test_block_with_variable_declaration(self):
-        source_code = "{ var x = true; x }"
+        source_code = "{ var x : Bool = true; x }"
         self.symtab.define_variable("x","x", Bool())  # 在测试中显式定义变量类型
         node = parse(tokenize(source_code))
         result_type = typecheck(node, self.symtab)

@@ -61,6 +61,7 @@ class Call(Instruction):
 class Label(Instruction):
     """Marks the destination of a jump instruction."""
     name: str
+
 @dataclass(frozen=True)
 class Jump(Instruction):
     """Unconditionally continues execution from the given label."""

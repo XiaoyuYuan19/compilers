@@ -101,11 +101,11 @@ class TestInterpreter(unittest.TestCase):
                 result = interpret(block, self.symtab)
                 self.assertEqual(result, expected)
 
-    # def test_while_loop(self):
-    #     source_code = "{var x = 0; while x < 5 do var x = x + 1; x}"
-    #     block = parse(tokenize(source_code))
-    #     result = interpret(block, self.symtab)
-    #     self.assertEqual(result, 5)
+    def test_while_loop(self):
+        source_code = "{var x = 0; while x < 5 do  x = x + 1;  x}"
+        block = parse(tokenize(source_code))
+        result = interpret(block, self.symtab)
+        self.assertEqual(result, 5)
 
     def test_short_circuit_logic(self):
         # 测试'or'的短路行为

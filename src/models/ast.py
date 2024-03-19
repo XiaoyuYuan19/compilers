@@ -15,8 +15,7 @@ class TypeExpr:
     """Base class for type expressions in the AST."""
     location: SourceLocation
 
-    def __eq__(self, other):
-        return type(self) == type(other)
+    type: Type = field(default=Unit(), init=False)
 
 @dataclass
 class IntTypeExpr(TypeExpr):
@@ -76,3 +75,18 @@ class VarDecl(Expression):
     value: Expression
     type_annotation : type
 
+@dataclass
+class WhileExpr(Expression):
+    condition: Expression
+    body: Expression
+
+@dataclass
+class CaseClause:
+    pattern: Expression
+    expression: Expression
+
+@dataclass
+class CaseExpr(Expression):
+    value: Expression
+    clauses: List[CaseClause]
+    default: Optional[Expression] = None

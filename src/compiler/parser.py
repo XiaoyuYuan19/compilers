@@ -99,16 +99,18 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             return parse_block()
         elif peek().text == 'if':
             return parse_if_expr()
+        elif peek().text == 'while':
+            return parse_while_expr()
         elif peek().type == 'identifier':
             next_pos = pos + 1
             if next_pos < len(tokens) and tokens[next_pos].text == '(':
                 return parse_function_call()
             else:
                 return parse_identifier()
-        elif peek().type == 'integer':
-            return parse_int_literal()
         elif peek().type == 'bool':
             return parse_bool_literal()
+        elif peek().type == 'integer':
+            return parse_int_literal()
         else:
             raise Exception(f'{peek().loc}: unexpected token "{peek().text}"')
 
@@ -177,6 +179,15 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
             consume('else')
             else_branch = parse_expression()
         return ast.IfExpr(condition=condition, then_branch=then_branch, else_branch=else_branch,location=function_location)
+
+    def parse_while_expr() -> ast.Expression:
+        name_token = consume('while')  # Consume the 'while' keyword
+        function_location = name_token.loc
+        condition = parse_expression()
+        consume('do')  # Consume the 'do' keyword
+        body = parse_expression()
+        return ast.WhileExpr(condition=condition, body=body, location=function_location)
+
 
     def parse_parenthesized() -> ast.Expression:
         consume('(')
@@ -257,4 +268,3 @@ def parse(tokens: list[Token], right_associative=False) -> ast.Expression:
 
     return res
 
-    # In parser.py
